@@ -1,0 +1,15 @@
+- name: Utworzenie katalogu oraz pliku
+  hosts: all
+  
+  vars:
+    users:
+      app1: developer1
+      app2: developer2
+      app3: developer3
+      db1: dbuser
+
+  tasks:
+    - name: Wykonanie komend bash
+      ansible.builtin.shell: |
+        mkdir /home/{{ users[inventory_hostname] }}/Katalog
+        echo "Dzien dobry, to jest pierwsza wiadomosc z playbook'a" > /home/{{ users[inventory_hostname] }}/Katalog/plik.txt

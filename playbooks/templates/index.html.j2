@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<body>
+  <h1>Strona z kontenera: {{ inventory_hostname }}</h1>
+
+  <p>Adres IP: {{ ansible_default_ipv4.address }}</p>
+
+  <p>Wygenerowano dnia {{ ansible_date_time.date }} o godzinie {{ ansible_date_time.time }}</p>
+
+  <p>Dane z bazy PostgreSQL ze schematu {{ inventory_hostname }} oraz tabeli komunikaty</p>
+ 
+  <p>{{ db_query_result.stdout | trim }}</p>
+
+  <p>Pozdrowienia z Ansible!</p>
+</body>
+</html>

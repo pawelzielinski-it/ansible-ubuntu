@@ -1,0 +1,11 @@
+- name: Odinstalowanie pakietow
+  hosts: all
+  become: yes
+  
+  tasks:
+    - name: Odinstalowanie htop oraz tree
+      ansible.builtin.apt:
+        name: 
+          - htop
+          - tree
+        state: absent

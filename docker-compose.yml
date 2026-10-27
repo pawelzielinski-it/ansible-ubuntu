@@ -1,0 +1,73 @@
+services:
+  control-svc:
+    build:
+      context: .
+      dockerfile: Dockerfile-control
+    container_name: control-ctr
+    hostname: control
+    ports: 
+      - "1022:22"
+    networks:
+      - docker-network
+    environment:
+      - TZ=Europe/Warsaw    
+  
+  app1-svc:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: app1-ctr
+    hostname: app1
+    ports:
+      - "2022:22"
+      - "2080:80"    
+    networks:
+      - docker-network
+    environment:
+      - TZ=Europe/Warsaw
+        
+  app2-svc:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: app2-ctr
+    hostname: app2
+    ports:
+      - "3022:22"
+      - "3080:80"
+    networks:
+      - docker-network
+    environment:
+      - TZ=Europe/Warsaw
+
+  app3-svc:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: app3-ctr
+    hostname: app3
+    ports:
+      - "4022:22"
+      - "4080:80"
+    networks:
+      - docker-network
+    environment:
+      - TZ=Europe/Warsaw
+
+  db1-svc:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: db1-ctr
+    hostname: db1
+    ports:
+      - "5022:22"
+      - "55432:5432"
+    networks:
+      - docker-network
+    environment:
+      - TZ=Europe/Warsaw
+
+networks:
+  docker-network:
+    driver: bridge

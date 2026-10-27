@@ -1,0 +1,53 @@
+- name: Tworzenie uzytkownikow na hostach zarzadzajacych
+  hosts: all
+
+  vars:
+    users:
+      app1: developer1
+      app2: developer2
+      app3: developer3
+      db1: dbuser
+
+  tasks:
+    - name: Tworzenie uzytkownika
+      ansible.builtin.user:
+        name: "{{ users[inventory_hostname] }}"
+        shell: /bin/bash
+        groups: sudo
+        append: yes
+
+    - name: Ustawianie hasla startowego
+      ansible.builtin.shell: echo "{{ users[inventory_hostname] }}:Startowe321" | chpasswd
+
+    - name: Tworzenie standardowych katalogow domowych
+      ansible.builtin.file:
+         path: "/home/{{ users[inventory_hostname] }}/{{ item }}"
+         state: directory
+         owner: "{{ users[inventory_hostname] }}"
+         group: "{{ users[inventory_hostname] }}"
+         mode: '0755'
+      loop:
+        - Desktop
+        - Documents
+        - Downloads
+        - Music
+        - Pictures
+        - Videos
+        - Templates
+        - Public
+          
+    - name: Tworzenie katalogu .ssh
+      ansible.builtin.file:
+        path: "/home/{{ users[inventory_hostname] }}/.ssh"
+        state: directory
+        owner: "{{ users[inventory_hostname] }}"
+        group: "{{ users[inventory_hostname] }}"
+        mode: '0700'
+
+    - name: Skopiowanie klucza publicznego do authorized_keys
+      ansible.builtin.copy:
+        src: /root/.ssh/id_rsa.pub
+        dest: "/home/{{ users[inventory_hostname] }}/.ssh/authorized_keys"
+        owner: "{{ users[inventory_hostname] }}"
+        group: "{{ users[inventory_hostname] }}"
+        mode: '0600'

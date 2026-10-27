@@ -1,0 +1,74 @@
+- name: Instalacja postgres, tworzenie roli oraz bazy
+  hosts: db1
+  become: yes
+
+  vars:
+    db_name: data
+    db_role: dbuser
+    db_pass: Startowe321
+
+    app_hosts:
+      - app1
+      - app2
+      - app3
+
+  tasks:
+    - name: Instalacja PostgreSQL i zaleznosci
+      apt:
+        name:
+          - postgresql
+          - python3-psycopg2
+        state: present
+        update_cache: yes
+
+    - name: Uruchomienie PostgreSQL
+      service:
+        name: postgresql
+        state: started
+        enabled: yes
+
+    - name: Utworzenie roli PostgreSQL - dbuser
+      become_user: postgres
+      postgresql_user:
+        name: "{{ db_role }}"
+        password: "{{ db_pass }}"
+        role_attr_flags: LOGIN,SUPERUSER
+
+    - name: Utworzenie bazy danych
+      become_user: postgres
+      postgresql_db:
+        name: "{{ db_name }}"
+        owner: "{{ db_role }}"
+        state: present
+
+    - name: Tworzenie schematu dla kazdego hosta app
+      become_user: postgres
+      ansible.builtin.shell: 'psql -d {{db_name}} -c "CREATE SCHEMA IF NOT EXISTS {{ item }};"'
+      loop: "{{ app_hosts }}"
+
+    - name: Tworzenie tabeli 'komunikaty' w kazdym schemacie
+      become_user: postgres
+      ansible.builtin.shell: 'psql -d {{ db_name }} -c "CREATE TABLE IF NOT EXISTS {{ item }}.komunikaty (tresc text UNIQUE);"'
+      loop: "{{ app_hosts }}"
+
+    - name: Wstawienie danych do tabeli 'komunikaty'
+      become_user: postgres
+      ansible.builtin.shell: 'psql -d {{ db_name }} -c "INSERT INTO {{ item }}.komunikaty (tresc) VALUES (''To jest tresc dla hosta {{ item }}'') ON CONFLICT DO NOTHING;"'
+      loop: "{{ app_hosts }}"
+
+    - name: Konfiguracja postgresql do nasluchiwania na wszystkich adresach
+      lineinfile:
+        path: /etc/postgresql/16/main/postgresql.conf
+        regexp: "^#listen_addresses = 'localhost'"
+        line: "listen_addresses = '*'"
+
+    - name: Konfiguracja pg_hba.conf - zaufanie dla control
+      lineinfile:
+        path: /etc/postgresql/16/main/pg_hba.conf
+        line: "host {{ db_name }} {{ db_role }} 172.0.0.0/8 trust"
+        insertafter: "local   all             all                                     peer"
+
+    - name: Restart postgresql
+      service:
+        name: postgresql
+        state: restarted

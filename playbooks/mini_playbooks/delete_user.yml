@@ -1,0 +1,10 @@
+- name: Usuwanie użytkownika 'admin'
+  hosts: all
+  become: yes
+
+  tasks:
+    - name: Usuwanie użytkownika admin wraz z katalogiem domowym
+      ansible.builtin.user:
+        name: admin
+        state: absent
+        remove: yes

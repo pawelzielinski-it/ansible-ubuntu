@@ -1,0 +1,41 @@
+FROM ubuntu:24.04
+
+# Instalacja pakietow i narzedzi systemowych
+RUN apt update && apt upgrade -y && \
+    apt install -y openssh-server curl iputils-ping inetutils-telnet iproute2 ansible vim postgresql-client && \
+    mkdir /var/run/sshd && \
+    apt clean && rm -rf /var/lib/apt/lists/*
+
+# Tworzenie katalogu SSH dla root'a
+RUN mkdir -p /root/.ssh
+
+# Utworzenie katalogu ansible, linku oraz kopiowanie plikow
+RUN mkdir -p /etc/ansible && \
+    ln -s /etc/ansible/playbooks /root/playbooks
+COPY hosts /etc/ansible/hosts
+COPY playbooks /etc/ansible/playbooks
+
+# Dodanie kluczy SSH oraz nadanie uprawnien
+COPY id_rsa.pub /root/.ssh/authorized_keys
+COPY id_rsa /root/.ssh/id_rsa
+COPY id_rsa.pub /root/.ssh/id_rsa.pub
+RUN chmod 600 /root/.ssh/id_rsa && \
+    chmod 644 /root/.ssh/id_rsa.pub &&\
+    chmod 600 /root/.ssh/authorized_keys && \
+    chmod 700 /root/.ssh
+
+# Skopiowanie skryptow oraz nadanie uprawnien
+COPY fingerprint.sh /root/fingerprint.sh
+COPY startup.sh /root/startup.sh
+RUN chmod +x /root/fingerprint.sh && \
+    chmod +x /root/startup.sh
+
+# Ustawienie opcji SSH (pozwolenie na logowanie root'a)
+RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config && \
+    sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config && \
+    sed -i 's/#PubkeyAuthentication yes/PubkeyAuthentication yes/' /etc/ssh/sshd_config
+
+EXPOSE 22
+
+# Uruchomienie uslugi SSH bez pracy w tle  
+CMD ["/usr/sbin/sshd", "-D"]

@@ -1,0 +1,12 @@
+- name: Instalacja pakietow
+  hosts: all
+  become: yes
+  
+  tasks:
+    - name: Instalacja pakietu htop oraz tree
+      ansible.builtin.apt:
+        name: 
+          - htop 
+          - tree
+        state: present
+        update_cache: yes

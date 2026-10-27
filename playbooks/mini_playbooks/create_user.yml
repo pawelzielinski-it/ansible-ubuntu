@@ -1,0 +1,16 @@
+- name: Tworzenie uzytkownika 'admin' i nadanie uprawnien sudo
+  hosts: all
+  become: yes
+
+  tasks:
+    - name: Tworzenie uzytkownika admin z uprawnieniami sudo
+      ansible.builtin.user:
+        name: admin
+        state: present
+        create_home: yes
+        shell: /bin/bash
+        groups: sudo
+        append: yes
+
+    - name: Ustawienie hasla dla admina
+      ansible.builtin.shell: echo "admin:Startowe321" | chpasswd          

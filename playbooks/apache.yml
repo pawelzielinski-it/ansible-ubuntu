@@ -1,0 +1,26 @@
+- name: Instalacja oraz konfiguracja Apache
+  hosts: "group1 app3"
+  become: yes
+
+  tasks:
+    - name: Instalowanie Apache
+      apt:
+        name: apache2
+        state: present
+        update_cache: yes
+
+    - name: Pobieranie danych z bazy
+      ansible.builtin.shell: 'psql -h db1 -d data -U dbuser -t -c "SELECT tresc FROM {{ inventory_hostname }}.komunikaty"'
+      register: db_query_result
+      delegate_to: localhost
+
+    - name: Kopiowanie gotowej strony HTML
+      template:
+        src: templates/index.html.j2
+        dest: /var/www/html/index.html
+        mode: '0644'
+
+    - name: Restart Apache
+      service:
+        name: apache2
+        state: restarted

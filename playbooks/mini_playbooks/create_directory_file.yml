@@ -1,0 +1,19 @@
+- name: Utworzenie katalogu oraz pliku
+  hosts: all
+  
+  vars:
+    users:
+      app1: developer1
+      app2: developer2
+      app3: developer3
+      db1: dbuser
+  
+  tasks:
+    - name: Utworzenie katalogu
+      ansible.builtin.file:
+        path: /home/{{ users[inventory_hostname] }}/Katalog
+        state: directory
+    - name: Utworzenie pliku z tekstem
+      ansible.builtin.copy:
+        dest: /home/{{ users[inventory_hostname] }}/Katalog/plik.txt
+        content: "Dzien dobry, to jest pierwsza wiadomosc z playbook'a\n"

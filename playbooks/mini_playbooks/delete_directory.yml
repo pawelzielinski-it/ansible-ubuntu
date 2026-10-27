@@ -1,0 +1,16 @@
+- name: Usuwanie katalogu
+  hosts: all
+  become: yes
+  
+  vars:
+    users:
+      app1: developer1
+      app2: developer2
+      app3: developer3 
+      db1: dbuser
+
+  tasks:
+    - name: Usuń katalog /home/{{ users[inventory_hostname] }}/Katalog
+      ansible.builtin.file:
+        path: /home/{{ users[inventory_hostname] }}/Katalog
+        state: absent
